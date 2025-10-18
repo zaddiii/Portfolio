@@ -1,0 +1,174 @@
+
+
+
+<!doctype html>
+<html>
+<head>
+  <title>Flip Game</title>
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      font-family: "Times New Roman", Times, serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 50px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .scoreboard {
+      margin: 20px 0;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .result-box {
+      margin: 20px auto;
+      font-size: 24px;
+      font-weight: bold;
+      padding: 20px;
+      border: 2px solid black;
+      width: 250px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    input[type="text"] {
+      padding: 8px;
+      font-size: 18px;
+      width: 100px;
+      text-align: center;
+      border: 2px solid black;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    input[type="text"]::placeholder {
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: 2px solid black;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: white;
+      color: black;
+    }
+
+    .coin {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 20px auto;
+      line-height: 100px;
+      font-size: 14px; /* fits text inside coin */
+      font-weight: bold;
+      border: 3px solid gold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 1s ease-in-out;
+    }
+
+    .input-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Coin Flip Game</h1>
+
+  <div class="scoreboard">
+    Wins: <span id="wins">0</span> | Losses: <span id="losses">0</span>
+  </div>
+
+  <div class="coin" id="coin">?</div>
+
+  <div class="result-box" id="resultBox">Make your guess!</div>
+
+  <div class="input-container">
+    <input type="text" id="guessInput" placeholder="Heads or Tails">
+    <button id="flipBtn">Flip Coin</button>
+  </div>
+
+  <script>
+    let wins = 0;
+    let losses = 0;
+    let flipCount = 0;
+
+    const winsSpan = document.getElementById('wins');
+    const lossesSpan = document.getElementById('losses');
+    const coinDiv = document.getElementById('coin');
+    const resultBox = document.getElementById('resultBox');
+    const flipBtn = document.getElementById('flipBtn');
+    const guessInput = document.getElementById('guessInput');
+
+    function flipCoin() {
+      const guess = guessInput.value.toLowerCase();
+      if (guess !== "heads" && guess !== "tails") {
+        resultBox.textContent = "Please enter 'Heads' or 'Tails'";
+        console.log("Invalid input:", guess);
+        return;
+      }
+
+      flipCount++;
+      coinDiv.textContent = "?";
+
+      const spins = Math.floor(Math.random() * 6 + 3);
+      const rotationDegrees = spins * 360;
+      const delay = 1000 + flipCount * 200;
+
+      coinDiv.style.transition = `transform ${delay}ms ease-in-out`;
+      coinDiv.style.transform = `rotateY(${rotationDegrees}deg)`;
+
+      console.log(`Flip #${flipCount} | Player guess: ${guess}`);
+
+      setTimeout(() => {
+        // Player's result
+        const playerResult = Math.random() < 0.5 ? 'heads' : 'tails';
+        coinDiv.textContent = playerResult.charAt(0).toUpperCase() + playerResult.slice(1);
+
+        // Computer's result
+        const computerResult = Math.random() < 0.5 ? 'heads' : 'tails';
+
+        // Determine winner
+        let outcome;
+        if (guess === playerResult) {
+          wins++;
+          outcome = `Player wins! Computer got ${computerResult.charAt(0).toUpperCase() + computerResult.slice(1)}`;
+        } else {
+          losses++;
+          outcome = `Player loses! Computer got ${computerResult.charAt(0).toUpperCase() + computerResult.slice(1)}`;
+        }
+
+        resultBox.textContent = outcome;
+        winsSpan.textContent = wins;
+        lossesSpan.textContent = losses;
+
+        // Log all to console
+        console.log(`Player coin: ${playerResult} | Computer coin: ${computerResult}`);
+        console.log(outcome);
+        console.log(`Scoreboard => Wins: ${wins}, Losses: ${losses}`);
+        console.log("-------------------------");
+
+        // Reset input
+        guessInput.value = "";
+        guessInput.focus();
+      }, delay);
+    }
+
+    flipBtn.addEventListener('click', flipCoin);
+  </script>
+
+</body>
+</html>

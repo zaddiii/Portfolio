@@ -1,0 +1,62 @@
+
+
+
+<!doctype html>
+<html>
+<head>
+  <title>Weather App</title>
+  <style>
+    body {
+      background-color: lightblue;
+      font-family: "Times New Roman", serif;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .appTitle {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .searchBox {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #ccc;
+      border-radius: 25px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .searchInput {
+      border: none;
+      padding: 10px 15px;
+      outline: none;
+      font-size: 16px;
+      color: black;
+      width: 200px;
+    }
+
+    .searchButton {
+      border: none;
+      background: red;   /* 🔴 button background */
+      color: white;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .searchButton:hover {
+      background: darkred; /* 🔴 darker shade on hover */
+    }
+  </style>
+</head>
+<body>
+  <h1 class="appTitle">Weather App</h1>
+  <div class="searchBox">
+    <input type="text" class="searchInput" placeholder="Enter city">
+    <button class="searchButton">Search &#128269;</button>
+  </div>
+</body>
+</html>

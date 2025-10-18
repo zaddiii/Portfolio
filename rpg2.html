@@ -1,0 +1,235 @@
+
+
+
+<!doctype html>
+<html>
+<head>
+  <title>RPG Game v2</title>
+  <style>
+    body {
+      background-color: burlywood;
+      font-family: "Times New Roman", serif;
+      color: black;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+    #gameArea button,
+    .startbutton {
+      border: none;
+      border-radius: 15px;
+      padding: 8px 15px;
+      margin: 5px;
+      background-color: white;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #gameArea {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="heading1">RPG Game</h1>
+
+  <div id="gameArea" style="display:none;">
+    <p>Player Health: <span id="playerHealth">100</span></p>
+    <p>Player Mana: <span id="playerMana">30</span></p>
+    <p>Enemy Health: <span id="enemyHealth">100</span></p>
+    <p>Enemy Mana: <span id="enemyMana">30</span></p>
+
+    <!-- Player buttons -->
+    <button onclick="playerAction('Attack')">Attack</button>
+    <button onclick="playerAction('Defend')">Defend</button>
+    <button onclick="playerAction('Special')">Special (-20 MP)</button>
+    <button onclick="playerAction('Heal')">Heal (+30 HP, -10 MP)</button>
+    <button onclick="resetGame(true)">Reset Game</button>
+  </div>
+
+  <!-- Scoreboard -->
+  <h2>Scoreboard</h2>
+  <p>Player Wins: <span id="playerWins">0</span></p>
+  <p>Enemy Wins: <span id="enemyWins">0</span></p>
+
+  <button class="startbutton" onclick="startGame()">Start Game</button>
+
+  <script>
+    let playerHealth, enemyHealth, playerMana, enemyMana;
+    let scores = { player: 0, enemy: 0 };
+    let playerDefending = false;
+    let enemyDefending = false;
+    let manaRegenInterval;
+    let gameLog = []; // recap storage
+
+    function flashBackground(color) {
+      let original = document.body.style.backgroundColor;
+      document.body.style.backgroundColor = color;
+      setTimeout(() => {
+        document.body.style.backgroundColor = original;
+      }, 200);
+    }
+
+    function startGame() {
+      resetGame(true);
+      document.getElementById("gameArea").style.display = "block";
+      document.querySelector(".startbutton").style.display = "none";
+      alert("Welcome to the Arena \u2694!"); // ⚔ fixed with Unicode escape
+      console.log("=== New Game Started ===");
+    }
+
+    function resetGame(fullReset = false) {
+      playerHealth = 100;
+      enemyHealth = 100;
+      playerMana = 30;
+      enemyMana = 30;
+      playerDefending = false;
+      enemyDefending = false;
+      gameLog = []; // clear log
+
+      if (fullReset) {
+        scores = { player: 0, enemy: 0 };
+        updateScoreboard();
+        console.log("Scoreboard reset.");
+      }
+
+      updateStats();
+      console.log("Game reset: Player HP 100/MP 30 | Enemy HP 100/MP 30");
+
+      if (manaRegenInterval) clearInterval(manaRegenInterval);
+      manaRegenInterval = setInterval(() => {
+        if (playerMana < 30) { playerMana++; }
+        if (enemyMana < 30) { enemyMana++; }
+        updateStats();
+      }, 2000);
+    }
+
+    function updateStats() {
+      document.getElementById("playerHealth").innerText = playerHealth;
+      document.getElementById("enemyHealth").innerText = enemyHealth;
+      document.getElementById("playerMana").innerText = playerMana;
+      document.getElementById("enemyMana").innerText = enemyMana;
+    }
+
+    function updateScoreboard() {
+      document.getElementById("playerWins").innerText = scores.player;
+      document.getElementById("enemyWins").innerText = scores.enemy;
+    }
+
+    function logAction(text) {
+      gameLog.push(text);
+      console.log(text);
+    }
+
+    function recapLog(winner) {
+      console.log("=== MATCH ENDED ===");
+      console.log("Winner: " + winner);
+      console.log("----- Full Recap -----");
+      gameLog.forEach((entry, i) => console.log((i+1) + ". " + entry));
+      console.log("======================");
+    }
+
+    function playerAction(action) {
+      playerDefending = false;
+      if (action === "Attack") {
+        let dmg = Math.floor(Math.random() * 10) + 10;
+        if (enemyDefending) dmg = Math.floor(dmg / 2);
+        enemyHealth -= dmg;
+        alert(`You attacked for ${dmg}!`);
+        logAction(`Player attacks for ${dmg}.`);
+        flashBackground("red");
+      } else if (action === "Defend") {
+        playerDefending = true;
+        alert("You defend this turn.");
+        logAction("Player defends.");
+        flashBackground("blue");
+      } else if (action === "Special" && playerMana >= 20) {
+        let dmg = Math.floor(Math.random() * 15) + 25;
+        if (enemyDefending) dmg = Math.floor(dmg / 2);
+        enemyHealth -= dmg;
+        playerMana -= 20;
+        alert(`You used a Special Attack! Enemy takes ${dmg} damage!`);
+        logAction(`Player uses Special → ${dmg} dmg, -20 MP.`);
+        flashBackground("purple");
+      } else if (action === "Heal" && playerMana >= 10) {
+        playerHealth = Math.min(playerHealth + 30, 100);
+        playerMana -= 10;
+        alert("You healed for 30 HP!");
+        logAction("Player heals +30 HP, -10 MP.");
+        flashBackground("green");
+      } else {
+        alert("Not enough mana!");
+        logAction("Failed action: Not enough mana.");
+      }
+      updateStats();
+      checkGameOver();
+
+      if (enemyHealth > 0) setTimeout(enemyTurn, 800);
+    }
+
+    function enemyTurn() {
+      enemyDefending = false;
+      let choice;
+
+      // AI decision making
+      if (enemyHealth <= 50 && enemyMana >= 10) {
+        choice = Math.random() < 0.6 ? "Heal" : "Defend";
+      } else if (enemyMana >= 20 && Math.random() < 0.5) {
+        choice = "Special";
+      } else if (Math.random() < 0.2) {
+        choice = "Defend";
+      } else {
+        choice = "Attack";
+      }
+
+      if (choice === "Attack") {
+        let dmg = Math.floor(Math.random() * 10) + 10;
+        if (playerDefending) dmg = Math.floor(dmg / 2);
+        playerHealth -= dmg;
+        alert(`Enemy attacks you for ${dmg}!`);
+        logAction(`Enemy attacks for ${dmg}.`);
+        flashBackground("orange");
+      } else if (choice === "Defend") {
+        enemyDefending = true;
+        alert("Enemy defends this turn.");
+        logAction("Enemy defends.");
+        flashBackground("blue");
+      } else if (choice === "Special" && enemyMana >= 20) {
+        let dmg = Math.floor(Math.random() * 15) + 25;
+        if (playerDefending) dmg = Math.floor(dmg / 2);
+        playerHealth -= dmg;
+        enemyMana -= 20;
+        alert(`Enemy uses Special Attack! You take ${dmg} damage!`);
+        logAction(`Enemy Special → ${dmg} dmg, -20 MP.`);
+        flashBackground("purple");
+      } else if (choice === "Heal" && enemyMana >= 10) {
+        enemyHealth = Math.min(enemyHealth + 30, 100);
+        enemyMana -= 10;
+        alert("Enemy heals for 30 HP!");
+        logAction("Enemy heals +30 HP, -10 MP.");
+        flashBackground("green");
+      }
+
+      updateStats();
+      checkGameOver();
+    }
+
+    function checkGameOver() {
+      if (playerHealth <= 0) {
+        alert("You Lose!");
+        logAction("Game Over → Player loses.");
+        recapLog("Enemy");
+        scores.enemy++;
+        updateScoreboard();
+        resetGame();
+      } else if (enemyHealth <= 0) {
+        alert("You Win!");
+        logAction("Game Over → Player wins.");
+        recapLog("Player");
+        scores.player++;
+        updateScoreboard();
+        resetGame();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JS RPG Game</title>
+  <style>
+    body{
+      background-color: ;
+      font-family: times;
+      color: black;
+    }
+    #gameArea button,
+    .startbutton{
+      border: none;
+      border-radius: 20px;
+      padding: 5px;
+      background-color: gold;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="heading1">RPG Game</h1>
+  <div id="gameArea" style="display:none;">
+    <p>Player Health: <span id="playerHealth">100</span></p>
+    <p>Player Mana: <span id="playerMana">30</span></p>
+    <p>Enemy Health: <span id="enemyHealth">100</span></p>
+    <p>Enemy Mana: <span id="enemyMana">30</span></p>
+
+    <!-- Player buttons -->
+    <button onclick="playerAction('Attack')">Attack</button>
+    <button onclick="playerAction('Defend')">Defend</button>
+    <button onclick="playerAction('Special')">Special</button>
+    <button onclick="playerAction('Heal')">Heal</button>
+    <button onclick="resetGame(true)">Reset Game</button>
+  </div>
+
+  <!-- Scoreboard -->
+  <h2>Scoreboard</h2>
+  <p>Player Wins: <span id="playerWins">0</span></p>
+  <p>Enemy Wins: <span id="enemyWins">0</span></p>
+
+  <button class="startbutton" onclick="startGame()">Start Game</button>
+
+  <script>
+    let playerHealth, enemyHealth, playerMana, enemyMana;
+    let scores = { player: 0, enemy: 0 };
+    let playerDefending = false;
+    let enemyDefending = false;
+    let manaRegenInterval; // ✅ for interval tracking
+
+    // Intro text
+    const gameIntro = `
+Welcome to the arena! ⚔️  
+You and your opponent will face off in a turn-based duel.  
+
+Each of you has Health (HP) and Mana (MP) to manage.  
+Actions you can take each turn:  
+- Attack → Deal steady damage (no mana cost)  
+- Special Attack → Stronger hit (uses mana)  
+- Heal → Restore some HP (uses mana)  
+- Defend → Halve incoming damage this turn (free)  
+
+Mana regenerates a little each turn, so plan wisely.  
+Will you save up for a big strike, heal at the right time, or defend against heavy damage?  
+
+⚠️ Beware: your enemy is no fool — they can also Heal, Attack, or Defend.  
+
+The battle continues until one of you falls.  
+Good luck, warrior!`;
+
+    function startGame() {
+      resetGame(true);
+      document.getElementById("gameArea").style.display = "block";
+      alert("Welcome To The Arena!");
+      console.log(gameIntro);
+      console.log("=== New Game Started ===");
+    }
+
+    function resetGame(fullReset = false) {
+      playerHealth = 100;
+      enemyHealth = 100;
+      playerMana = 30;
+      enemyMana = 30;
+      playerDefending = false;
+      enemyDefending = false;
+
+      if (fullReset) {
+        scores = { player: 0, enemy: 0 };
+        updateScoreboard();
+        console.log("Scoreboard reset.");
+      }
+
+      updateStats();
+      console.log("Game reset: Player HP 100/MP 30 | Enemy HP 100/MP 30");
+
+      // ✅ Mana regeneration every 3s, capped at 30
+      if (manaRegenInterval) clearInterval(manaRegenInterval);
+      manaRegenInterval = setInterval(() => {
+        if (playerMana < 30) {
+          playerMana++;
+          console.log("Player mana +1");
+        }
+        if (enemyMana < 30) {
+          enemyMana++;
+          console.log("Enemy mana +1");
+        }
+        updateStats();
+      }, 3000);
+    }
+
+    function updateStats() {
+      document.getElementById("playerHealth").innerText = playerHealth;
+      document.getElementById("enemyHealth").innerText = enemyHealth;
+      document.getElementById("playerMana").innerText = playerMana;
+      document.getElementById("enemyMana").innerText = enemyMana;
+      console.log(`Stats => Player HP:${playerHealth}, MP:${playerMana} | Enemy HP:${enemyHealth}, MP:${enemyMana}`);
+    }
+
+    function updateScoreboard() {
+      document.getElementById("playerWins").innerText = scores.player;
+      document.getElementById("enemyWins").innerText = scores.enemy;
+      console.log(`Scoreboard => Player Wins:${scores.player}, Enemy Wins:${scores.enemy}`);
+    }
+
+    function playerAction(action) {
+      playerDefending = false; // reset each turn
+      if (action === "Attack") {
+        let damage = Math.floor(Math.random() * 10) + 5;
+        if (enemyDefending) {
+          damage = Math.floor(damage / 2);
+          console.log("Enemy defended! Damage halved.");
+        }
+        enemyHealth -= damage;
+        alert(`You attacked for ${damage}!`);
+        console.log(`Player attacks for ${damage} damage.`);
+      } else if (action === "Defend") {
+        playerDefending = true;
+        alert("You defend this turn, reducing damage.");
+        console.log("Player defends.");
+      } else if (action === "Special" && playerMana >= 20) { // ✅ changed to 20
+        let damage = 15;
+        if (enemyDefending) {
+          damage = Math.floor(damage / 2);
+          console.log("Enemy defended! Special damage halved.");
+        }
+        enemyHealth -= damage;
+        playerMana -= 20; // ✅ costs 20 mana now
+        alert(`You used a Special Attack! Enemy takes ${damage} damage!`);
+        console.log(`Player used Special Attack: ${damage} damage dealt, -20 MP.`);
+      } else if (action === "Heal" && playerMana >= 5) {
+        playerHealth = Math.min(playerHealth + 10, 100);
+        playerMana -= 5;
+        alert("You healed for 10 HP!");
+        console.log("Player heals for 10 HP, -5 MP.");
+      } else {
+        alert("Not enough mana!");
+        console.log("Player tried an action but had insufficient mana.");
+      }
+      updateStats();
+      checkGameOver();
+
+      if (enemyHealth > 0) {
+        setTimeout(enemyTurn, 700);
+      }
+    }
+
+    function enemyTurn() {
+      enemyDefending = false; // reset each turn
+      let choice;
+
+      // Defensive logic: heal or defend at low HP
+      if (enemyHealth <= 20 && enemyMana >= 5) {
+        choice = Math.random() > 0.5 ? "Heal" : "Defend";
+      } else {
+        let options = ["Attack", "Defend", "Special"];
+        choice = options[Math.floor(Math.random() * options.length)];
+      }
+
+      if (choice === "Attack") {
+        let damage = Math.floor(Math.random() * 10) + 5;
+        if (playerDefending) {
+          damage = Math.floor(damage / 2);
+          console.log("Player defended! Damage halved.");
+        }
+        playerHealth -= damage;
+        alert(`Enemy attacked you for ${damage}!`);
+        console.log(`Enemy attacks for ${damage} damage.`);
+      } else if (choice === "Defend") {
+        enemyDefending = true;
+        alert("Enemy defends this turn.");
+        console.log("Enemy defends.");
+      } else if (choice === "Special" && enemyMana >= 20) { // ✅ changed to 20
+        let damage = 15;
+        if (playerDefending) {
+          damage = Math.floor(damage / 2);
+          console.log("Player defended! Special damage halved.");
+        }
+        playerHealth -= damage;
+        enemyMana -= 20; // ✅ costs 20 mana now
+        alert(`Enemy used Special Attack! You take ${damage} damage!`);
+        console.log(`Enemy used Special Attack: ${damage} damage dealt, -20 MP.`);
+      } else if (choice === "Heal" && enemyMana >= 5) {
+        enemyHealth = Math.min(enemyHealth + 10, 100);
+        enemyMana -= 5;
+        alert("Enemy healed for 10 HP!");
+        console.log("Enemy heals for 10 HP, -5 MP.");
+      }
+
+      updateStats();
+      checkGameOver();
+    }
+
+    function checkGameOver() {
+      if (playerHealth <= 0) {
+        alert("You Lose!");
+        console.log("Game Over → Player loses.");
+        scores.enemy++;
+        updateScoreboard();
+        resetGame();
+      } else if (enemyHealth <= 0) {
+        alert("You Win!");
+        console.log("Game Over → Player wins.");
+        scores.player++;
+        updateScoreboard();
+        resetGame();
+      }
+    }
+  </script>
+</body>
+</html>
