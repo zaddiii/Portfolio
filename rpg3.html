@@ -1,0 +1,228 @@
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>RPG Game v4 — God AI (Intelligence-Speed System)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #001f3f; font-family: "Times New Roman", serif; }
+    .bar { transition: width 0.25s ease; }
+    .bar-text { position: absolute; top: 50%; transform: translateY(-50%); right: 6px; }
+  </style>
+</head>
+
+<body class="text-white flex flex-col items-center min-h-screen p-2 sm:p-4 md:p-6 overflow-x-hidden">
+  <h1 class="text-xl sm:text-2xl md:text-3xl font-bold mt-4 mb-2 text-center">RPG Battle Arena</h1>
+
+  <div id="scoreboard" class="fixed top-3 left-3 bg-blue-950/80 p-3 rounded-xl shadow-lg text-xs w-[130px] sm:w-[150px]">
+    <p><strong>Player Wins:</strong> <span id="playerWins">0</span></p>
+    <p><strong>Enemy Wins:</strong> <span id="enemyWins">0</span></p>
+    <p><strong>Score:</strong> <span id="score">0</span></p>
+    <p><strong>AI IQ:</strong> <span id="aiIQ">0</span></p>
+  </div>
+
+  <div id="gameArea" class="hidden flex justify-center w-full mt-4">
+    <div class="bg-blue-950/30 rounded-2xl shadow-xl p-4 sm:p-5 w-full max-w-3xl flex flex-col gap-4">
+      <!-- Player Section -->
+      <div>
+        <p class="text-lg sm:text-xl font-semibold text-center">🧑‍🎮 Player</p>
+        <div class="relative bg-gray-800 rounded-lg h-4 w-full overflow-hidden my-2">
+          <div id="playerHealthBar" class="bar bg-red-600 h-full w-full"></div>
+          <span id="playerHealthText" class="absolute bar-text text-[11px] sm:text-xs">200 / 200</span>
+        </div>
+        <div class="relative bg-gray-800 rounded-lg h-4 w-full overflow-hidden">
+          <div id="playerManaBar" class="bar bg-blue-500 h-full w-full"></div>
+          <span id="playerManaText" class="absolute bar-text text-[11px] sm:text-xs">50 / 50</span>
+        </div>
+      </div>
+
+      <!-- Enemy Section -->
+      <div>
+        <p class="text-lg sm:text-xl font-semibold text-center">👾 Enemy</p>
+        <div class="relative bg-gray-800 rounded-lg h-4 w-full overflow-hidden my-2">
+          <div id="enemyHealthBar" class="bar bg-red-600 h-full w-full"></div>
+          <span id="enemyHealthText" class="absolute bar-text text-[11px] sm:text-xs">200 / 200</span>
+        </div>
+        <div class="relative bg-gray-800 rounded-lg h-4 w-full overflow-hidden">
+          <div id="enemyManaBar" class="bar bg-blue-500 h-full w-full"></div>
+          <span id="enemyManaText" class="absolute bar-text text-[11px] sm:text-xs">50 / 50</span>
+        </div>
+        <div class="relative bg-gray-800 rounded-lg h-4 w-full overflow-hidden mt-2">
+          <div id="enemyIntelligenceBar" class="bar bg-green-400 h-full w-0"></div>
+          <span id="enemyIntelligenceText" class="absolute bar-text text-[11px] sm:text-xs">IQ 0</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-wrap justify-center gap-2">
+        <button id="attackBtn" class="bg-red-600 px-3 sm:px-4 py-2 rounded-xl font-bold text-sm sm:text-base flex-1 min-w-[80px]">Attack</button>
+        <button id="defendBtn" class="bg-gray-600 px-3 sm:px-4 py-2 rounded-xl font-bold text-sm sm:text-base flex-1 min-w-[80px]">Defend</button>
+        <button id="specialBtn" class="bg-purple-600 px-3 sm:px-4 py-2 rounded-xl font-bold text-sm sm:text-base flex-1 min-w-[80px]">Special (-40 MP)</button>
+        <button id="healBtn" class="bg-green-600 px-3 sm:px-4 py-2 rounded-xl font-bold text-sm sm:text-base flex-1 min-w-[80px]">Heal (+20 HP)</button>
+        <button id="resetBtn" class="bg-yellow-500 px-3 sm:px-4 py-2 rounded-xl font-bold text-sm sm:text-base flex-1 min-w-[80px]">Reset</button>
+      </div>
+
+      <!-- Battle Log -->
+      <div id="battleLog" class="bg-gray-900/70 text-gray-100 p-3 rounded-lg overflow-y-auto text-xs sm:text-sm shadow-inner" style="max-height:25vh;"></div>
+    </div>
+  </div>
+
+  <!-- Start Button -->
+  <button id="startBtn" class="mt-4 sm:mt-6 px-6 py-3 sm:px-8 sm:py-4 bg-emerald-600 hover:bg-emerald-700 rounded-2xl text-white font-bold text-base sm:text-lg shadow-lg">
+    Start Game
+  </button>
+
+<script>
+const MAX_HP=200, MAX_MP=50, SPECIAL_COST=40, HEAL_COST=30, HEAL_HP=20;
+let playerHP=MAX_HP, playerMP=MAX_MP, enemyHP=MAX_HP, enemyMP=MAX_MP;
+let enemyIQ=0, enemyDefending=false, playerDefending=false;
+let scores={player:0, enemy:0, score:0};
+let aiInterval=null, aiActive=false;
+
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const randInt=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const log=t=>{const p=document.createElement('p'); p.innerText=t; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight;};
+
+function updateBars(){
+  playerHealthBar.style.width=(playerHP/MAX_HP*100)+'%';
+  playerManaBar.style.width=(playerMP/MAX_MP*100)+'%';
+  enemyHealthBar.style.width=(enemyHP/MAX_HP*100)+'%';
+  enemyManaBar.style.width=(enemyMP/MAX_MP*100)+'%';
+  playerHealthText.innerText=`${playerHP}/${MAX_HP}`;
+  playerManaText.innerText=`${playerMP}/${MAX_MP}`;
+  enemyHealthText.innerText=`${enemyHP}/${MAX_HP}`;
+  enemyManaText.innerText=`${enemyMP}/${MAX_MP}`;
+  enemyIntelligenceBar.style.width=enemyIQ+'%';
+  enemyIntelligenceText.innerText=`IQ ${enemyIQ.toFixed(1)}`;
+  if(enemyIQ<30) enemyIntelligenceBar.style.background="#44f";
+  else if(enemyIQ<80) enemyIntelligenceBar.style.background="#ffb300";
+  else if(enemyIQ<95) enemyIntelligenceBar.style.background="#ff6600";
+  else enemyIntelligenceBar.style.background="#0f0";
+}
+
+function updateScoreboard(){
+  playerWins.innerText=scores.player;
+  enemyWins.innerText=scores.enemy;
+  score.innerText=scores.score;
+  aiIQ.innerText=enemyIQ.toFixed(1);
+}
+
+function decideAction(){
+  let actions=['Attack','Defend','Heal','Special'];
+  if(enemyMP<HEAL_COST) actions=actions.filter(a=>a!=='Heal');
+  if(enemyMP<SPECIAL_COST) actions=actions.filter(a=>a!=='Special');
+
+  if(enemyIQ<20) return actions[randInt(0,actions.length-1)];
+
+  if(enemyHP < MAX_HP * 0.6 && enemyMP >= HEAL_COST) return 'Heal';
+  if(playerHP > MAX_HP * 0.3 && enemyMP >= SPECIAL_COST) return 'Special';
+  if(Math.random() < 0.3) return 'Defend';
+  return 'Attack';
+}
+
+function getAISpeed(){
+  if(enemyIQ<50) return 350;
+  if(enemyIQ<80) return 300;
+  return 250;
+}
+
+function enemyAction(){
+  if(!aiActive) return;
+  if(playerHP<=0 || enemyHP<=0) return;
+  const action=decideAction();
+  if(action==='Attack'){
+    const dmg=randInt(18,35);
+    const actual=playerDefending?Math.floor(dmg/2):dmg;
+    playerHP=clamp(playerHP-actual,0,MAX_HP);
+    log(`Enemy attacks → ${actual} dmg.`);
+  } else if(action==='Defend'){
+    enemyDefending=true; log('Enemy defends.');
+  } else if(action==='Special' && enemyMP>=SPECIAL_COST){
+    enemyMP-=SPECIAL_COST;
+    const dmg=randInt(15,40);
+    playerHP=clamp(playerHP-dmg,0,MAX_HP);
+    log(`Enemy unleashes Special → ${dmg} dmg!`);
+  } else if(action==='Heal' && enemyMP>=HEAL_COST){
+    enemyMP-=HEAL_COST;
+    enemyHP=clamp(enemyHP+HEAL_HP,0,MAX_HP);
+    log('Enemy heals +20 HP.');
+  }
+  checkEnd();
+  updateBars();
+}
+
+function playerAction(act){
+  if(!aiActive){ aiActive=true; startAI(); log("AI engages after your first move!"); }
+  playerDefending=false;
+  if(act==='Attack'){
+    const dmg=randInt(12,28);
+    const actual=enemyDefending?Math.floor(dmg/2):dmg;
+    enemyHP=clamp(enemyHP-actual,0,MAX_HP);
+    log(`Player attacks → ${actual} dmg.`);
+  } else if(act==='Defend'){
+    playerDefending=true; log('Player defends.');
+  } else if(act==='Special'){
+    if(playerMP<SPECIAL_COST){ log('Not enough mana.'); return; }
+    playerMP-=SPECIAL_COST;
+    const dmg=randInt(15,40);
+    const actual=enemyDefending?Math.floor(dmg/2):dmg;
+    enemyHP=clamp(enemyHP-actual,0,MAX_HP);
+    log(`Player uses Special → ${actual} dmg.`);
+  } else if(act==='Heal'){
+    if(playerMP<HEAL_COST){ log('Not enough mana.'); return; }
+    playerMP-=HEAL_COST;
+    playerHP=clamp(playerHP+HEAL_HP,0,MAX_HP);
+    log('Player heals +20 HP.');
+  }
+  updateBars();
+  checkEnd();
+}
+
+function checkEnd(){
+  if(playerHP<=0 || enemyHP<=0){
+    clearInterval(aiInterval); aiActive=false;
+    if(enemyHP<=0 && playerHP<=0) log('Double KO!');
+    else if(enemyHP<=0){ log('Player wins!'); scores.player++; scores.score+=50; enemyIQ+=1; }
+    else { log('Enemy wins!'); scores.enemy++; scores.score=Math.max(0,scores.score-30); enemyIQ+=0.5; }
+    enemyIQ=clamp(enemyIQ,0,100);
+    updateScoreboard();
+    setTimeout(resetGame,1000);
+  }
+}
+
+function resetGame(){
+  clearInterval(aiInterval); aiActive=false;
+  playerHP=enemyHP=MAX_HP; playerMP=enemyMP=MAX_MP;
+  enemyDefending=playerDefending=false;
+  updateBars(); updateScoreboard();
+  log('New round — AI will wait for your first move.');
+}
+
+function startAI(){
+  clearInterval(aiInterval);
+  aiInterval=setInterval(enemyAction,getAISpeed());
+}
+
+startBtn.onclick=()=>{
+  gameArea.classList.remove('hidden');
+  startBtn.classList.add('hidden');
+  resetGame();
+  log('Game started. You move first!');
+};
+
+attackBtn.onclick=()=>playerAction('Attack');
+defendBtn.onclick=()=>playerAction('Defend');
+specialBtn.onclick=()=>playerAction('Special');
+healBtn.onclick=()=>playerAction('Heal');
+resetBtn.onclick=resetGame;
+
+updateBars(); updateScoreboard();
+</script>
+</body>
+</html>
