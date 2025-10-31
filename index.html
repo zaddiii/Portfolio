@@ -103,9 +103,7 @@
     }
 
     /* ===== ABOUT ===== */
-    .about {
-      text-align: center;
-    }
+    .about { text-align: center; }
     .about p {
       color: #ccc;
       font-size: 1.1rem;
@@ -177,9 +175,7 @@
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ===== CONTACT ===== */
     .contact {
@@ -219,9 +215,16 @@
     }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 700px) {
-      .hero h1 { font-size: 2.8rem; }
-      .hero h2 { font-size: 1.3rem; }
+    @media (max-width: 768px) {
+      section { padding: 60px 5%; }
+      .hero h1 { font-size: 3rem; }
+      .hero h2 { font-size: 1.4rem; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2.4rem; }
+      .hero h2 { font-size: 1.2rem; }
+      .card { padding: 20px; }
+      .card button { padding: 8px 20px; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -240,7 +243,7 @@
   <!-- ===== HERO ===== -->
   <section id="home" class="hero">
     <h1>Zaddii</h1>
-    <h2>Front-End Developer | Web3 Builder</h2>
+    <h2>Full Stack Developer | Web3 Builder</h2>
     <p>Designing sleek interfaces, building responsive web apps, and experimenting with blockchain innovation.</p>
     <button id="contactBtn">Contact Me</button>
   </section>
@@ -250,7 +253,7 @@
     <h3>About Me</h3>
     <img id="profileImg" src="" alt="Zaddii profile" class="profile-img">
     <p>
-      I’m a passionate front-end developer focused on creating clean, responsive, and interactive experiences on the web. 
+      I’m a passionate full stack developer focused on creating clean, responsive, and interactive experiences on the web. 
       I love combining design and logic — bringing ideas to life with HTML, CSS, JavaScript, and blockchain integrations.
     </p>
   </section>
@@ -265,16 +268,6 @@
         <button onclick="openSafe('rpg.html')">Play</button>
       </div>
       <div class="card">
-        <h4>Bitcoin Blog</h4>
-        <p>Insights into blockchain, bitcoin adoption, and decentralized technology.</p>
-        <button onclick="openSafe('bitcoin.html')">Read</button>
-      </div>
-      <div class="card">
-        <h4>Flip Game</h4>
-        <p>Simple fun — test your luck in this heads-or-tails coin flip challenge.</p>
-        <button onclick="openSafe('flip-game.html')">Play</button>
-      </div>
-      <div class="card">
         <h4>Calculator</h4>
         <p>A minimalist calculator with dark mode and clean UI.</p>
         <button onclick="openSafe('calculator.html')">Open</button>
@@ -283,6 +276,16 @@
         <h4>RPG v2</h4>
         <p>Enhanced RPG Arena: mana, AI, scoreboard, and spellcasting system.</p>
         <button onclick="openSafe('rpg2.html')">Play</button>
+      </div>
+      <div class="card">
+        <h4>RPG v3</h4>
+        <p>The next evolution of the RPG Arena with advanced AI, improved UI, and more gameplay features.</p>
+        <button onclick="openSafe('rpg3/index.html')">Play</button>
+      </div>
+      <div class="card">
+        <h4>TON Project</h4>
+        <p>The Open Network (TON) blockchain project for Web3 adoption and scalable dApps.</p>
+        <button onclick="openSafe('ton/index.html')">View</button>
       </div>
 
       <!-- Spinner card -->
