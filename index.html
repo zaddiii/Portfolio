@@ -2,7 +2,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,13 +40,16 @@
       font-weight: 700;
       letter-spacing: 1px;
       color: #e63946;
+      white-space: nowrap;
     }
+    .navbar div { display: flex; flex-wrap: wrap; justify-content: center; }
     .navbar a {
       color: #fff;
       text-decoration: none;
       margin-left: 25px;
       font-weight: 500;
       position: relative;
+      white-space: nowrap;
     }
     .navbar a::after {
       content: "";
@@ -72,18 +74,20 @@
       background:
         linear-gradient(rgba(26, 28, 40, 0.85), rgba(26, 28, 40, 0.95)),
         url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+      padding: 0 5%;
     }
-    .hero h1 { font-size: 4rem; margin-bottom: 10px; color: #fff; }
+    .hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); margin-bottom: 10px; color: #fff; }
     .hero h2 {
-      font-size: 1.8rem;
+      font-size: clamp(1rem, 3vw, 1.8rem);
       font-weight: 300;
       color: #e63946;
       margin-bottom: 20px;
     }
     .hero p {
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
       color: #bbb;
       max-width: 600px;
+      line-height: 1.6;
     }
     .hero button {
       background: #e63946;
@@ -121,6 +125,28 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
 
+    /* ===== SKILLS ===== */
+    .skills {
+      margin-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .skill-tag {
+      background: #2a2d40;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+    .skill-tag:hover {
+      background: #e63946;
+      transform: translateY(-3px);
+    }
+
     /* ===== PROJECTS ===== */
     .projects h3 {
       text-align: center;
@@ -130,7 +156,7 @@
     }
     .project-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 25px;
     }
     .card {
@@ -191,6 +217,7 @@
       display: flex;
       justify-content: center;
       gap: 25px;
+      flex-wrap: wrap;
     }
     .socials a img {
       width: 35px;
@@ -216,22 +243,29 @@
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
-      section { padding: 60px 5%; }
-      .hero h1 { font-size: 3rem; }
-      .hero h2 { font-size: 1.4rem; }
+      section { padding: 60px 6%; }
+      .navbar { flex-direction: column; align-items: flex-start; }
+      .navbar div { margin-top: 10px; }
     }
     @media (max-width: 480px) {
-      .hero h1 { font-size: 2.4rem; }
-      .hero h2 { font-size: 1.2rem; }
+      .hero h1 { font-size: 2rem; }
+      .hero h2 { font-size: 1rem; }
       .card { padding: 20px; }
       .card button { padding: 8px 20px; font-size: 0.9rem; }
+      .navbar a { margin-left: 15px; font-size: 0.9rem; }
+    }
+    @media (max-width: 360px) {
+      .hero h1 { font-size: 1.8rem; }
+      .hero h2 { font-size: 0.9rem; }
+      .hero p { font-size: 0.85rem; }
+      .card p { font-size: 0.85rem; }
     }
   </style>
 </head>
 <body>
   <!-- ===== NAVBAR ===== -->
   <nav class="navbar" id="navbar">
-    <div class="logo">CODEWITHZADDII</div>
+    <div class="logo">CODEWITHZADDY</div>
     <div>
       <a href="#home">Home</a>
       <a href="#about">About</a>
@@ -242,7 +276,7 @@
 
   <!-- ===== HERO ===== -->
   <section id="home" class="hero">
-    <h1>Zaddii</h1>
+    <h1>Zaddy</h1>
     <h2>Full Stack Developer | Web3 Builder</h2>
     <p>Designing sleek interfaces, building responsive web apps, and experimenting with blockchain innovation.</p>
     <button id="contactBtn">Contact Me</button>
@@ -254,8 +288,24 @@
     <img id="profileImg" src="" alt="Zaddii profile" class="profile-img">
     <p>
       I’m a passionate full stack developer focused on creating clean, responsive, and interactive experiences on the web. 
-      I love combining design and logic — bringing ideas to life with HTML, CSS, JavaScript, and blockchain integrations.
+      I love combining design and logic — bringing ideas to life with HTML, CSS, JavaScript, and blockchain integrations. <br><br>
+      On the backend, I work with <strong>Node.js</strong> and <strong>Express.js</strong> to build scalable APIs, while using <strong>React</strong> and <strong>Tailwind CSS</strong> on the frontend to craft modern, responsive interfaces.  
+      I deploy and manage apps using platforms like <strong>Render</strong> and <strong>GitHub Pages</strong> for reliable cloud hosting.
     </p>
+
+    <div class="skills">
+      <span class="skill-tag">HTML</span>
+      <span class="skill-tag">CSS</span>
+      <span class="skill-tag">JavaScript</span>
+      <span class="skill-tag">React</span>
+      <span class="skill-tag">Tailwind CSS</span>
+      <span class="skill-tag">Node.js</span>
+      <span class="skill-tag">Express.js</span>
+      <span class="skill-tag">MongoDB</span>
+      <span class="skill-tag">Render</span>
+      <span class="skill-tag">GitHub Pages</span>
+      <span class="skill-tag">Web3 / Blockchain</span>
+    </div>
   </section>
 
   <!-- ===== PROJECTS ===== -->
@@ -279,11 +329,18 @@
       </div>
       <div class="card">
         <h4>TON Blog</h4>
-        <p>The Open Network (TON) blockchain blog for beginers understanding.</p>
+        <p>The Open Network (TON) blockchain blog for beginners understanding.</p>
         <button onclick="openSafe('ton.html')">View</button>
       </div>
 
-      <!-- Spinner card -->
+      <!-- 🔥 Added Kronos IT Support project -->
+      <div class="card">
+        <h4>Kronos IT Support <span style="font-size:0.8rem;color:#bbb;">(Client Project)</span></h4>
+        <p>A professional tech support website built for a client — clean UI and responsive design.</p>
+        <button onclick="openSafe('https://kronositsupport.github.io/KronosITsupport/')">View Site</button>
+      </div>
+      <!-- 🔥 End of addition -->
+
       <div class="card" style="flex-direction:column; justify-content:center; align-items:center;">
         <div class="spinner"></div>
         <p style="margin-top:15px; color:#ccc;">More projects loading soon...</p>
@@ -309,19 +366,16 @@
   </section>
 
   <script>
-    // Smooth scroll to contact section
     document.getElementById('contactBtn').addEventListener('click', () => {
       document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Navbar shadow on scroll
     const navbar = document.getElementById('navbar');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 20) navbar.classList.add('scrolled');
       else navbar.classList.remove('scrolled');
     });
 
-    // Fade-in animation on scroll
     const faders = document.querySelectorAll('[data-fade]');
     const appearOptions = { threshold: 0.2 };
     const appearOnScroll = new IntersectionObserver((entries, observer) => {
@@ -333,12 +387,10 @@
     }, appearOptions);
     faders.forEach(fader => appearOnScroll.observe(fader));
 
-    // Open links safely
     function openSafe(url) {
       window.open(url, '_blank', 'noopener,noreferrer');
     }
 
-    // Dynamic GitHub profile image
     async function loadGitHubAvatar() {
       try {
         const res = await fetch('https://api.github.com/users/zaddiii');
