@@ -1,0 +1,395 @@
+
+
+
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RPG Game v4</title>
+<style>
+  body {
+    background-color: #001f3f;
+    font-family: "Times New Roman", serif;
+    color: white;
+    text-align: center;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* pure transparent scoreboard — only text visible */
+  #scoreboard {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13px;
+    text-align: left;
+    z-index: 10;
+    color: #ffffff;
+    box-shadow: none;
+    line-height: 1.3;
+  }
+
+  #gameArea {
+    display: none;
+    margin-top: 20px;
+    max-width: 600px;
+    width: 95%;
+    margin-inline: auto;
+    background-color: rgba(0, 0, 50, 0.5);
+    padding: 15px;
+    border-radius: 15px;
+    position: relative;
+    z-index: 5;
+  }
+  .bar { transition: width 0.25s ease; }
+  .bar-container {
+    position: relative;
+    background: #333;
+    border-radius: 8px;
+    height: 14px;
+    overflow: hidden;
+  }
+  .bar-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 6px;
+    font-size: 12px;
+    pointer-events: none;
+  }
+  #battleLog {
+    background-color: rgba(20, 20, 20, 0.8);
+    color: #ddd;
+    border-radius: 10px;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    margin-top: 10px;
+    font-size: 13px;
+    text-align: left;
+  }
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 15px;
+    margin: 4px;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  button:active {
+    transform: scale(0.97);
+  }
+  #alertBox {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #fff;
+    z-index: 15;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    font-size: 14px;
+  }
+  #alertBox.show { opacity: 1; }
+
+  @media (max-width: 600px) {
+    h1 {
+      font-size: 20px;
+      margin-top: 15px;
+    }
+    #scoreboard {
+      font-size: 12px;
+      top: 5px;
+      left: 5px;
+    }
+    #gameArea {
+      padding: 10px;
+      border-radius: 10px;
+    }
+    button {
+      font-size: 12px;
+      padding: 6px 10px;
+      margin: 3px;
+    }
+    #battleLog {
+      font-size: 12px;
+      height: 120px;
+    }
+    #alertBox {
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    #scoreboard {
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    button {
+      width: 90%;
+      max-width: 220px;
+      display: block;
+      margin: 6px auto;
+    }
+  }
+</style>
+</head>
+
+<body>
+<h1>⚔ RPG Battle Arena</h1>
+
+<div id="scoreboard">
+  <p><strong>Player Wins:</strong> <span id="playerWins">0</span></p>
+  <p><strong>Enemy Wins:</strong> <span id="enemyWins">0</span></p>
+  <p><strong>Score:</strong> <span id="score">0</span></p>
+  <p><strong>AI IQ:</strong> <span id="aiIQ">0</span></p>
+</div>
+
+<div id="gameArea">
+  <p><strong>🧑‍🎮 Player</strong></p>
+  <div class="bar-container">
+    <div id="playerHealthBar" class="bar" style="background:red;width:100%;height:100%;"></div>
+    <span id="playerHealthText" class="bar-text">200 / 200</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="playerManaBar" class="bar" style="background:blue;width:100%;height:100%;"></div>
+    <span id="playerManaText" class="bar-text">50 / 50</span>
+  </div>
+
+  <p style="margin-top:10px;"><strong>👾 Enemy</strong></p>
+  <div class="bar-container">
+    <div id="enemyHealthBar" class="bar" style="background:red;width:100%;height:100%;"></div>
+    <span id="enemyHealthText" class="bar-text">200 / 200</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="enemyManaBar" class="bar" style="background:blue;width:100%;height:100%;"></div>
+    <span id="enemyManaText" class="bar-text">50 / 50</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="enemyIntelligenceBar" class="bar" style="background:green;width:0;height:100%;"></div>
+    <span id="enemyIntelligenceText" class="bar-text">IQ 0</span>
+  </div>
+
+  <div style="margin-top:10px;">
+    <button onclick="playerAction('Attack')">Attack</button>
+    <button onclick="playerAction('Defend')">Defend</button>
+    <button onclick="playerAction('Special')">Special (-30 MP)</button>
+    <button onclick="playerAction('Heal')">Heal (+20 HP, -20 MP)</button>
+    <button onclick="resetGame()">Reset</button>
+  </div>
+
+  <div id="battleLog"></div>
+</div>
+
+<button id="startBtn" onclick="startGame()">Start Game</button>
+<div id="alertBox"></div>
+
+<script>
+const MAX_HP = 200, MAX_MP = 50, SPECIAL_COST = 30, HEAL_COST = 20, HEAL_HP = 20;
+let scores = { player: 0, enemy: 0, score: 0 };
+let playerHP = MAX_HP, playerMP = MAX_MP, enemyHP = MAX_HP, enemyMP = MAX_MP;
+let enemyIQ = 0, enemyDefending = false, playerDefending = false;
+let aiInterval = null, aiActive = false, regenInterval = null, roundOver = false;
+
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const log = t => { const p=document.createElement("p"); p.innerText=t; battleLog.appendChild(p); battleLog.scrollTop=battleLog.scrollHeight; };
+
+function showAlert(msg){
+  const box=document.getElementById("alertBox");
+  box.textContent=msg;
+  box.classList.add("show");
+  setTimeout(()=>box.classList.remove("show"),1500);
+}
+
+function updateBars(){
+  playerHealthBar.style.width=(playerHP/MAX_HP*100)+'%';
+  playerManaBar.style.width=(playerMP/MAX_MP*100)+'%';
+  enemyHealthBar.style.width=(enemyHP/MAX_HP*100)+'%';
+  enemyManaBar.style.width=(enemyMP/MAX_MP*100)+'%';
+  playerHealthText.innerText=`${playerHP}/${MAX_HP}`;
+  playerManaText.innerText=`${playerMP}/${MAX_MP}`;
+  enemyHealthText.innerText=`${enemyHP}/${MAX_HP}`;
+  enemyManaText.innerText=`${enemyMP}/${MAX_MP}`;
+  enemyIntelligenceBar.style.width=enemyIQ+'%';
+  enemyIntelligenceText.innerText=`IQ ${enemyIQ.toFixed(1)}`;
+}
+
+function updateScoreboard(){
+  playerWins.innerText=scores.player;
+  enemyWins.innerText=scores.enemy;
+  score.innerText=scores.score;
+  aiIQ.innerText=enemyIQ.toFixed(1);
+}
+
+function decideAction(){
+  let a=['Attack','Defend','Heal','Special'];
+  if(enemyMP<HEAL_COST)a=a.filter(x=>x!=='Heal');
+  if(enemyMP<SPECIAL_COST)a=a.filter(x=>x!=='Special');
+  if(enemyIQ<20)return a[randInt(0,a.length-1)];
+  if(enemyHP<MAX_HP*0.6&&enemyMP>=HEAL_COST)return'Heal';
+  if(playerHP>MAX_HP*0.3&&enemyMP>=SPECIAL_COST)return'Special';
+  if(Math.random()<0.3)return'Defend';
+  return'Attack';
+}
+
+function getAISpeed(){
+  if(enemyIQ<50)return 350;
+  if(enemyIQ<80)return 300;
+  return 250;
+}
+
+function enemyAction(){
+  if(!aiActive||playerHP<=0||enemyHP<=0||roundOver)return;
+  enemyDefending=false;
+  const act=decideAction();
+  if(act==='Attack'){
+    let dmg=randInt(18,35);
+    let actual=playerDefending?Math.floor(dmg*0.25):dmg;
+    if(playerDefending&&dmg>0)playerMP=clamp(playerMP+1,0,MAX_MP);
+    playerHP=clamp(playerHP-actual,0,MAX_HP);
+    showAlert(`Enemy attacks ${actual}!`);
+    log(`Enemy attacks → ${actual} dmg.`);
+  } else if(act==='Defend'){
+    enemyDefending=true; showAlert("Enemy defends!"); log("Enemy defends.");
+  } else if(act==='Special'&&enemyMP>=SPECIAL_COST){
+    enemyMP-=SPECIAL_COST;
+    let dmg=randInt(15,40);
+    let actual=playerDefending?Math.floor(dmg*0.25):dmg;
+    if(playerDefending&&dmg>0)playerMP=clamp(playerMP+1,0,MAX_MP);
+    playerHP=clamp(playerHP-actual,0,MAX_HP);
+    showAlert(`Enemy Special → ${actual}!`);
+    log(`Enemy Special → ${actual} dmg.`);
+  } else if(act==='Heal'&&enemyMP>=HEAL_COST&&enemyHP<MAX_HP){
+    const heal=Math.min(HEAL_HP,MAX_HP-enemyHP);
+    enemyMP-=HEAL_COST; enemyHP=clamp(enemyHP+heal,0,MAX_HP);
+    showAlert(`Enemy heals +${heal} HP.`);
+    log(`Enemy heals +${heal} HP.`);
+  }
+  updateBars();
+  checkEnd();
+}
+
+function playerAction(act){
+  if(roundOver)return;
+  if(!aiActive){
+    aiActive=true;
+    startAI();
+    log("AI engages after your first move!");
+  }
+  playerDefending=false;
+  if(act==='Attack'){
+    let dmg=randInt(12,28);
+    let actual=enemyDefending?Math.floor(dmg*0.25):dmg;
+    if(enemyDefending&&dmg>0)enemyMP=clamp(enemyMP+1,0,MAX_MP);
+    enemyHP=clamp(enemyHP-actual,0,MAX_HP);
+    showAlert(`You attacked for ${actual}!`);
+    log(`Player attacks → ${actual} dmg.`);
+  } else if(act==='Defend'){
+    playerDefending=true; showAlert("You defend!"); log("Player defends.");
+  } else if(act==='Special'){
+    if(playerMP<SPECIAL_COST){showAlert('Not enough mana.');return;}
+    playerMP-=SPECIAL_COST;
+    let dmg=randInt(15,40);
+    let actual=enemyDefending?Math.floor(dmg*0.25):dmg;
+    if(enemyDefending&&dmg>0)enemyMP=clamp(enemyMP+1,0,MAX_MP);
+    enemyHP=clamp(enemyHP-actual,0,MAX_HP);
+    showAlert(`You used Special → ${actual}!`);
+    log(`Player Special → ${actual} dmg.`);
+  } else if(act==='Heal'){
+    if(playerHP>=MAX_HP){showAlert('HP full.');return;}
+    if(playerMP<HEAL_COST){showAlert('Not enough mana.');return;}
+    const heal=Math.min(HEAL_HP,MAX_HP-playerHP);
+    playerMP-=HEAL_COST; playerHP=clamp(playerHP+heal,0,MAX_HP);
+    showAlert(`Healed +${heal} HP (-${HEAL_COST} MP).`);
+    log(`Player heals +${heal} HP.`);
+  }
+  updateBars();
+  checkEnd();
+}
+
+function checkEnd(){
+  if(roundOver)return;
+  if(playerHP<=0||enemyHP<=0){
+    roundOver=true;
+    clearInterval(aiInterval);
+    clearInterval(regenInterval);
+    aiActive=false;
+    if(enemyHP<=0&&playerHP<=0)showAlert('Double KO!');
+    else if(enemyHP<=0){showAlert('You Win!');scores.player++;scores.score+=50;enemyIQ+=1;}
+    else{showAlert('You Lose!');scores.enemy++;scores.score=Math.max(0,scores.score-30);enemyIQ+=0.5;}
+    enemyIQ=clamp(enemyIQ,0,100);
+    updateScoreboard();
+    setTimeout(()=>{roundOver=false;newRound();},1200);
+  }
+}
+
+function newRound(){
+  playerHP=enemyHP=MAX_HP;
+  playerMP=enemyMP=MAX_MP;
+  enemyDefending=playerDefending=false;
+  aiActive=false;
+  updateBars();
+  updateScoreboard();
+  log('New round — AI waits for your move.');
+  startRegen();
+}
+
+function resetGame(){
+  scores={player:0,enemy:0,score:0};
+  enemyIQ=0;
+  newRound();
+  updateScoreboard();
+  log('Scoreboard reset — all wins cleared.');
+}
+
+function startAI(){
+  clearInterval(aiInterval);
+  aiInterval=setInterval(enemyAction,getAISpeed());
+}
+
+function startRegen(){
+  clearInterval(regenInterval);
+  regenInterval=setInterval(()=>{
+    playerMP=clamp(playerMP+2,0,MAX_MP);
+    enemyMP=clamp(enemyMP+2,0,MAX_MP);
+    updateBars();
+  },1000);
+}
+
+function startGame(){
+  gameArea.style.display="block";
+  startBtn.style.display="none";
+  newRound();
+  showAlert("Welcome to the Arena ⚔!");
+  log("Game started. You move first!");
+}
+
+updateBars();
+updateScoreboard();
+</script>
+</body>
+  </html>
