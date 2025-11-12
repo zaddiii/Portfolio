@@ -1,0 +1,380 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>RPG Game</title>
+<style>
+body {
+  background-color: #001f3f;
+  font-family: "Times New Roman", serif;
+  color: white;
+  text-align: center;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+#scoreboard {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: transparent;
+  font-size: 13px;
+  text-align: left;
+  z-index: 10;
+  color: #ffffff;
+  line-height: 1.3;
+}
+#gameArea {
+  display: none;
+  margin-top: 20px;
+  max-width: 600px;
+  width: 95%;
+  margin-inline: auto;
+  background-color: rgba(0, 0, 50, 0.5);
+  padding: 15px;
+  border-radius: 15px;
+  position: relative;
+  z-index: 5;
+}
+.bar { transition: width 0.25s ease; }
+.bar-container {
+  position: relative;
+  background: #333;
+  border-radius: 8px;
+  height: 14px;
+  overflow: hidden;
+}
+.bar-text {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  font-size: 12px;
+  pointer-events: none;
+}
+#battleLog {
+  background-color: rgba(20, 20, 20, 0.8);
+  color: #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  height: 150px;
+  overflow-y: auto;
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: left;
+}
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 15px;
+  margin: 4px;
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+button:active { transform: scale(0.97); }
+#alertBox {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  color: #fff;
+  z-index: 15;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  font-size: 14px;
+}
+#alertBox.show { opacity: 1; }
+/* Navigation Menu */
+#navMenu {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0,0,50,0.8);
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+  gap: 15px;
+  z-index: 20;
+}
+#navMenu button { background: #fff; color:#001f3f; font-weight:bold; }
+
+@media (max-width: 600px) {
+  h1 { font-size: 20px; margin-top: 15px; }
+  #scoreboard { font-size: 12px; top: 5px; left: 5px; }
+  #gameArea { padding: 10px; border-radius: 10px; }
+  button { font-size: 12px; padding: 6px 10px; margin: 3px; }
+  #battleLog { font-size: 12px; height: 120px; }
+  #alertBox { font-size: 12px; padding: 8px 16px; }
+}
+@media (max-width: 400px) {
+  #scoreboard { font-size: 11px; line-height: 1.2; }
+  button { width: 90%; max-width: 220px; display: block; margin: 6px auto; }
+}
+</style>
+</head>
+<body>
+<h1>RPG Battle Arena</h1>
+<div id="scoreboard">
+  <p><strong>Player Wins:</strong> <span id="playerWins">0</span></p>
+  <p><strong>Enemy Wins:</strong> <span id="enemyWins">0</span></p>
+  <p><strong>Score:</strong> <span id="score">0</span></p>
+  <p><strong>AI IQ:</strong> <span id="aiIQ">0</span></p>
+  <p><strong>💰 Tokens:</strong> <span id="walletBalance">0</span></p>
+</div>
+
+<div id="gameArea">
+  <p><strong>🧑‍🎮 Player</strong></p>
+  <div class="bar-container">
+    <div id="playerHealthBar" class="bar" style="background:red;width:100%;height:100%;"></div>
+    <span id="playerHealthText" class="bar-text">200 / 200</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="playerManaBar" class="bar" style="background:blue;width:100%;height:100%;"></div>
+    <span id="playerManaText" class="bar-text">50 / 50</span>
+  </div>
+  <p style="margin-top:10px;"><strong>👾 Enemy</strong></p>
+  <div class="bar-container">
+    <div id="enemyHealthBar" class="bar" style="background:red;width:100%;height:100%;"></div>
+    <span id="enemyHealthText" class="bar-text">300 / 300</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="enemyManaBar" class="bar" style="background:blue;width:100%;height:100%;"></div>
+    <span id="enemyManaText" class="bar-text">50 / 50</span>
+  </div>
+  <div class="bar-container" style="margin-top:5px;">
+    <div id="enemyIntelligenceBar" class="bar" style="background:green;width:0;height:100%;"></div>
+    <span id="enemyIntelligenceText" class="bar-text">IQ 0</span>
+  </div>
+  <div style="margin-top:10px;">
+    <button onclick="playerAction('Attack')">Attack</button>
+    <button onclick="playerAction('Defend')">Defend</button>
+    <button onclick="playerAction('Special')">Special (-30 MP)</button>
+    <button onclick="playerAction('Heal')">Heal (+20 HP, -20 MP)</button>
+    <button onclick="resetGame()">Reset</button>
+  </div>
+  <div id="battleLog"></div>
+</div>
+
+<button id="startBtn" onclick="startGame()">Start Game</button>
+<div id="alertBox"></div>
+
+<!-- Navigation Menu -->
+<div id="navMenu">
+  <button onclick="location.href='upgrade.html'">🛠 Upgrade</button>
+</div>
+
+<script>
+/* === Load Upgrades === */
+let attackUpgrade = parseInt(localStorage.getItem('attackUpgrade')) || 0;
+let specialUpgrade = parseInt(localStorage.getItem('specialUpgrade')) || 0;
+
+function loadUpgrades() {
+  attackUpgrade = parseInt(localStorage.getItem('attackUpgrade')) || 0;
+  specialUpgrade = parseInt(localStorage.getItem('specialUpgrade')) || 0;
+}
+
+/* === RPG logic === */
+const PLAYER_MAX_HP = 200;
+const MAX_MP = 50, SPECIAL_COST=30, HEAL_COST=20, HEAL_HP=20;
+
+let scores = {player:0, enemy:0, score:0};
+let playerHP = PLAYER_MAX_HP, playerMP = MAX_MP;
+let enemyMaxHP = 200, enemyMaxMP = 50;
+let enemyHP = enemyMaxHP, enemyMP = enemyMaxMP;
+let enemyIQ = 0, enemyDefending = false, playerDefending = false;
+
+let aiInterval=null, aiActive=false, regenInterval=null, roundOver=false;
+
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const randInt=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const log=t=>{const p=document.createElement("p");p.innerText=t;battleLog.appendChild(p);battleLog.scrollTop=battleLog.scrollHeight;};
+function showAlert(msg){const box=document.getElementById("alertBox");box.textContent=msg;box.classList.add("show");setTimeout(()=>box.classList.remove("show"),1500);}
+
+/* === Wallet system === */
+let wallet={tokens:0};
+function loadWallet(){
+  const saved=localStorage.getItem("rpgWallet");
+  if(saved) wallet=JSON.parse(saved);
+  else { wallet.tokens=1000; saveWallet(); showAlert('Welcome! 1000 tokens granted.'); }
+  updateScoreboard();
+}
+function saveWallet(){
+  localStorage.setItem("rpgWallet",JSON.stringify(wallet));
+  updateScoreboard();
+}
+
+/* === Bars & Scoreboard === */
+function updateBars(){
+  playerHealthBar.style.width=(playerHP/PLAYER_MAX_HP*100)+'%';
+  playerManaBar.style.width=(playerMP/MAX_MP*100)+'%';
+  enemyHealthBar.style.width=(enemyHP/enemyMaxHP*100)+'%';
+  enemyManaBar.style.width=(enemyMP/enemyMaxMP*100)+'%';
+  playerHealthText.innerText=`${playerHP}/${PLAYER_MAX_HP}`;
+  playerManaText.innerText=`${playerMP}/${MAX_MP}`;
+  enemyHealthText.innerText=`${enemyHP}/${enemyMaxHP}`;
+  enemyManaText.innerText=`${enemyMP}/${enemyMaxMP}`;
+  enemyIntelligenceBar.style.width=enemyIQ+'%';
+  enemyIntelligenceText.innerText=`IQ ${enemyIQ.toFixed(1)}`;
+}
+function updateScoreboard(){
+  playerWins.innerText=scores.player;
+  enemyWins.innerText=scores.enemy;
+  score.innerText=scores.score;
+  aiIQ.innerText=enemyIQ.toFixed(1);
+  document.getElementById("walletBalance").innerText=wallet.tokens;
+}
+
+/* === Enemy IQ & Stats Scaling === */
+function increaseEnemyIQ(){
+  enemyIQ = +(enemyIQ + 1.5).toFixed(1);
+  enemyMaxHP += 100;
+  enemyMaxMP += 20;
+  enemyHP = enemyMaxHP;
+  enemyMP = enemyMaxMP;
+  updateBars();
+}
+
+/* === Player and Enemy Actions === */
+function playerAction(act){
+  if(roundOver) return;
+  if(!aiActive){aiActive=true; startAI(); log("AI engages after your first move!");}
+  playerDefending=false;
+  if(act==='Attack'){ let dmg=Math.floor(randInt(12,28)*(1+attackUpgrade/100)); let actual=enemyDefending?Math.floor(dmg*0.25):dmg;
+    enemyHP=clamp(enemyHP-actual,0,enemyMaxHP);
+    showAlert(`You attacked for ${actual}!`); log(`Player attacks → ${actual} dmg.`);
+  } else if(act==='Defend'){ playerDefending=true; showAlert("You defend!"); log("Player defends."); }
+  else if(act==='Special'){ if(playerMP<SPECIAL_COST){showAlert('Not enough mana.'); return;}
+    playerMP-=SPECIAL_COST;
+    let baseMin=30, baseMax=50;
+    let dmg=Math.floor(randInt(baseMin,baseMax)*Math.pow(2,specialUpgrade)); 
+    let actual=enemyDefending?Math.floor(dmg*0.25):dmg;
+    enemyHP=clamp(enemyHP-actual,0,enemyMaxHP);
+    showAlert(`You used Special → ${actual}!`); log(`Player Special → ${actual} dmg.`);
+  } else if(act==='Heal'){ if(playerHP>=PLAYER_MAX_HP){showAlert('HP full.'); return;}
+    if(playerMP<HEAL_COST){showAlert('Not enough mana.'); return;} const heal=Math.min(HEAL_HP,PLAYER_MAX_HP-playerHP);
+    playerMP-=HEAL_COST; playerHP=clamp(playerHP+heal,0,PLAYER_MAX_HP);
+    showAlert(`Healed +${heal} HP (-${HEAL_COST} MP).`); log(`Player heals +${heal} HP.`);
+  }
+  updateBars(); checkEnd();
+}
+
+/* === Enemy & AI === */
+function decideAction(){
+  const actions=['Attack','Defend','Heal','Special'];
+  return actions[randInt(0,actions.length-1)];
+}
+function enemyAction(){
+  if(!aiActive||playerHP<=0||enemyHP<=0||roundOver) return;
+  enemyDefending=false;
+  const act=decideAction();
+  if(act==='Attack'){ let dmg=randInt(18,35); let actual=playerDefending?Math.floor(dmg*0.25):dmg;
+    playerHP=clamp(playerHP-actual,0,PLAYER_MAX_HP); showAlert(`Enemy attacks ${actual}!`); log(`Enemy attacks → ${actual} dmg.`);
+  } else if(act==='Defend'){ enemyDefending=true; showAlert("Enemy defends!"); log("Enemy defends."); }
+  else if(act==='Special' && enemyMP>=SPECIAL_COST){ enemyMP-=SPECIAL_COST; let dmg=randInt(30,50); let actual=playerDefending?Math.floor(dmg*0.25):dmg;
+    playerHP=clamp(playerHP-actual,0,PLAYER_MAX_HP); showAlert(`Enemy Special → ${actual}!`); log(`Enemy Special → ${actual} dmg.`); }
+  else if(act==='Heal' && enemyMP>=HEAL_COST && enemyHP<enemyMaxHP){ const heal=Math.min(HEAL_HP,enemyMaxHP-enemyHP);
+    enemyMP-=HEAL_COST; enemyHP=clamp(enemyHP+heal,0,enemyMaxHP); showAlert(`Enemy heals +${heal} HP.`); log(`Enemy heals +${heal} HP.`); }
+  updateBars(); checkEnd();
+}
+
+function startAI(){clearInterval(aiInterval); aiInterval=setInterval(enemyAction,400);}
+function startRegen(){clearInterval(regenInterval); regenInterval=setInterval(()=>{playerMP=clamp(playerMP+2,0,MAX_MP); enemyMP=clamp(enemyMP+2,0,enemyMaxMP); updateBars();},1000);}
+
+function checkEnd(){
+  if(roundOver) return;
+  if(playerHP<=0 || enemyHP<=0){
+    roundOver=true; 
+    clearInterval(aiInterval); 
+    clearInterval(regenInterval); 
+    aiActive=false;
+
+    if(enemyHP<=0 && playerHP<=0) {
+      showAlert('Double KO!');
+    }
+    else if(enemyHP<=0){
+      showAlert('You Win!');
+      scores.player++; 
+      scores.score+=50;
+      wallet.tokens+=100; 
+      saveWallet();
+
+      // Increase enemy stats cumulatively
+      increaseEnemyIQ(); 
+      log(`🏆 You earned 100 tokens! Wallet: ${wallet.tokens} | Enemy IQ ${enemyIQ.toFixed(1)}, HP → ${enemyMaxHP}, MP → ${enemyMaxMP}`);
+    } 
+    else { 
+      showAlert('You Lose!'); 
+      scores.enemy++; 
+      scores.score=Math.max(0,scores.score-30); 
+    }
+
+    updateScoreboard();
+    setTimeout(()=>{roundOver=false; newRound();},1200);
+  }
+}
+
+function newRound(){
+  playerHP=PLAYER_MAX_HP; playerMP=MAX_MP; enemyHP=enemyMaxHP; enemyMP=enemyMaxMP;
+  enemyDefending=playerDefending=false; aiActive=false; updateBars(); updateScoreboard();
+  log('New round — AI waits for your move.'); startRegen();
+}
+
+function resetGame(){
+  scores = {player:0, enemy:0, score:0};
+  wallet.tokens = 1000;
+
+  // Reset enemy stats to base values
+  enemyIQ = 0;
+  enemyMaxHP = 200;  // base HP
+  enemyMaxMP = 50;   // base MP
+  enemyHP = enemyMaxHP;
+  enemyMP = enemyMaxMP;
+
+  saveWallet();
+  newRound();
+  updateScoreboard();
+  log('Game reset — Wallet restored to 1000 tokens and Enemy stats reset.');
+}
+
+function startGame(){
+  gameArea.style.display="block";
+  startBtn.style.display="none";
+  newRound();
+  showAlert("Welcome to the Arena ⚔!");
+  log("Game started. You move first!");
+  loadWallet();
+  loadUpgrades();
+}
+
+/* === Initialize on page load === */
+window.addEventListener("DOMContentLoaded", () => {
+  updateBars();
+  updateScoreboard();
+});
+</script>
+</body>
+      </html>
