@@ -70,7 +70,7 @@
       text-align: center;
       background:
         linear-gradient(rgba(26, 28, 40, 0.85), rgba(26, 28, 40, 0.95)),
-        url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
+        url('https://raw.githubusercontent.com/devhamazi/Portfolio/81e7a5d718bb1b00187d9fcf58e73d5f94001677/Future%20artificial%20intelligence%20robot%20and%20cyborg_%20_%20Premium%20Photo.jpeg') center/cover no-repeat;
       padding: 0 5%;
     }
     .hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); margin-bottom: 10px; color: #fff; }
@@ -400,7 +400,7 @@
 
     async function loadGitHubAvatar() {
       try {
-        const res = await fetch('https://api.github.com/users/zaddiii');
+        const res = await fetch('https://api.github.com/users/devhamazi');
         const data = await res.json();
         document.getElementById('profileImg').src = data.avatar_url;
       } catch (err) {
